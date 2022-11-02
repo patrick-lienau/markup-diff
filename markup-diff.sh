@@ -13,11 +13,11 @@ fi
 
 # check args
 LAST_WD=$(pwd)
-BASE_DIR=$(pwd)
+DESTINATION=$(pwd)
 URL="$1"
 
 if [ "$2" != "" ]; then
-    BASE_DIR="$1"
+    DESTINATION="$1"
     URL="$2"
 elif [ "$1" == "" ]; then
     echo "error: expected at least a URL!"
@@ -25,14 +25,14 @@ elif [ "$1" == "" ]; then
 fi
 
 # resolve path, create if needed, then go there
-BASE_DIR=$(realpath "$BASE_DIR")
-mkdir -p "$BASE_DIR"
-cd "$BASE_DIR"
+DESTINATION=$(realpath "$DESTINATION")
+mkdir -p "$DESTINATION"
+cd "$DESTINATION"
 
 # check if there is a git repo
 git status &> /dev/null
-
-if [[ $INSTALL_EXITCODE -ne 0 ]]; then
+GIT_EXISTS=$?
+if [[ $GIT_EXISTS -ne 0 ]]; then
     echo "error: this needs to be tracked by git. Try creating an new git repo via \`git init\`"
     cd "$LAST_WD"
     exit 1
@@ -45,7 +45,31 @@ if [[ -n $(git status --porcelain) ]]; then
 fi 
 
 echo "scrape: $URL"
-echo "destination: $BASE_DIR"
+echo "destination: $DESTINATION"
+
+# clean anything that exists in the directory so theres's no "left-overs" contaminating things
+rm -fr *
+echo "working directory clean..."
+echo ""
+echo "scraping site. This will take a while..."
+
+if [[ ! -f ./.gitignore ]]; then
+    echo "hts-*" >> ./.gitignore
+    echo ".DS_Store" >> ./.gitignore
+elif ! grep -q "hts-*" .gitignore ; then
+    echo "hts-*" >> ./.gitignore
+    echo ".DS_Store" >> ./.gitignore
+fi
+
+# starting scrape
+httrack "$URL" -w -O "$DESTINATION" -c8 -I0 --display --disable-security-limits -T4096 -'*wp-admin*' -'*wp-content*' -'*wp-json*' -'*wp-include*'
+
+echo ""
+echo "scrape complete"
+
+git add --all .
+
+echo "run \`git commit -m "some message"\` to commit the snapshot before reviewing "
 
 # return user to previous location
 cd "$LAST_WD"
