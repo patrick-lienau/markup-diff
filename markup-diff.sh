@@ -2,8 +2,8 @@
 
     
 # check tools
-if ! command -v httrack &> /dev/null; then
-    echo "error: httrack is not installed. Try installing via \`brew install httrack\`"
+if ! command -v wget &> /dev/null; then
+    echo "error: wget is not installed. Try installing via \`brew install wget\`"
     exit 1
 fi
 if ! command -v realpath &> /dev/null; then
@@ -53,16 +53,8 @@ echo "working directory clean..."
 echo ""
 echo "scraping site. This will take a while..."
 
-if [[ ! -f ./.gitignore ]]; then
-    echo "hts-*" >> ./.gitignore
-    echo ".DS_Store" >> ./.gitignore
-elif ! grep -q "hts-*" .gitignore ; then
-    echo "hts-*" >> ./.gitignore
-    echo ".DS_Store" >> ./.gitignore
-fi
-
 # starting scrape
-httrack "$URL" -w -O "$DESTINATION" -c8 -I0 --display --disable-security-limits -T4096 -'*wp-admin*' -'*wp-content*' -'*wp-json*' -'*wp-include*'
+wget -c -e robots=off -E -U --convert-links --no-clobber -r -q --show-progress -X wp-content,wp-includes,wp-admin,wp-json -R "xmlrpc.php*"  "$URL"
 
 echo ""
 echo "scrape complete"

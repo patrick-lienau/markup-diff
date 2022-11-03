@@ -1,6 +1,6 @@
 # markup-diff
 
-This script uses [**`httrack`**](https://www.httrack.com/) to scrape a site and keep a copy of it locally (as .html files) these snapshots can then be diff'ed to determine if there have been any regressions.
+This script uses **`wget`** to scrape a site and keep a copy of it locally (as .html files) these snapshots can then be diff'ed to determine if there have been any regressions.
 
 ---
 ## This does not handle visual or behavioral regressions. It knows nothing about runtime behavior, it just saves the raw HTML from the server.
@@ -9,17 +9,17 @@ This script uses [**`httrack`**](https://www.httrack.com/) to scrape a site and 
 
 ### How to Install
 
-1. Make sure you have `httrack`, and `coreutils` installed. On macOS can be installed via [homebrew](https://brew.sh/).
+1. Make sure you have **`wget`**, and **`coreutils`** installed. On macOS can be installed via [homebrew](https://brew.sh/).
     ```bassh
     brew update
-    brew install httrack
+    brew install wget
     brew install coreutils
     ```
     > **[ NOTE ]:**
     >
     > If your're running *nix or WSL, you don't need to install `coreutils` but if you get an error about "command not found: `realpath`" you'll need to find the appropriate package for your distro, or edit the script to use `readlink` or something instead, you'll figure it out.
 
-2. Download this script and save it somewhere. It's probabyl not worth registering as a package so you can download/install it however, wherever, you want. 
+2. Download this script and save it somewhere. It's probably not worth registering as a package so you can download/install it however, wherever, you want. 
     
     I suggest you make it accessible via your `$PATH` by creating a symbolic link to `/usr/bin/local`.
     
@@ -46,7 +46,7 @@ This script uses [**`httrack`**](https://www.httrack.com/) to scrape a site and 
 2. Create the first snapshot of the site's __*local*__ instance of the site in it's __*"before"*__ state.
     > **THIS WILL NOT WORK AGAINST QA** 
     >
-    > QA uses http auth (via the `WWW-Authenticate` header) which `httrack` supposedly supports via inlining the username and password in the url but I haven't been able to get it to work yet.
+    > QA uses http auth and this functionality is not yet supported.
     ```sh
     diff-markup http://some-site.lndo.site/
     ```
@@ -60,11 +60,11 @@ This script uses [**`httrack`**](https://www.httrack.com/) to scrape a site and 
     ```sh
     cd ~/dev/site-regressions
     ```
-6. Capture the site in it's after state:
+6. Capture the site in it's __*"after"*__ state:
     
     
     > **[ NOTE ]:** 
-    > * `markup-diff` deletes everything its working directory to ensure `httrack` does not attempt a "partial" scrape. Make sure you are in the correct directory.
+    > * `markup-diff` deletes everything its working directory to ensure `wget` does not attempt a "partial" scrape. Make sure you are in the correct directory.
     > * `markup-diff` won't let you proceed when the git tree is dirty (ie: there are untracked files or changes which have not been committed). If you get a message about this, return to step 3
     
     Run the following again the same url as before
@@ -78,15 +78,7 @@ This script uses [**`httrack`**](https://www.httrack.com/) to scrape a site and 
     ```
 9. Review the changes. 
     ```sh
-    git diff HEAD~1
+    git diff HEAD~1 # diff the last two changes
     ```
 
     or use your favorite diff viewer/git GUI.
-
-
-    >
-    > **[ NOTE ]:**
-    >
-    > You may notice that `httrack` injects a lot of HTML comments like "Mirrored by HTTrack Website Copier" This is super annoying and if there's no option to omit this, it'll revise the script to snip those bits out.
-    >
-    > I find searching for **"Warning"** and **"Error"** makes the review process much more productive.
