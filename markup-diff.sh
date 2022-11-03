@@ -52,15 +52,18 @@ rm -fr *
 echo "working directory clean..."
 echo ""
 echo "scraping site. This will take a while..."
+echo ""
+echo ""
 
 # starting scrape
 wget -c -e robots=off -E -U --convert-links --no-clobber -r -q --show-progress -X wp-content,wp-includes,wp-admin,wp-json -R "xmlrpc.php*"  "$URL"
 
 echo ""
+echo ""
 echo "scrape complete"
-
+echo ""
 git add --all .
-
+echo ""
 echo "run \`git commit -m "some message"\` to commit the snapshot before reviewing "
 
 # return user to previous location
